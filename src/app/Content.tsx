@@ -3,7 +3,7 @@
 import { Box } from "@mui/material";
 import Label from "./components/Label";
 import Connection from "./components/Connection";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import ControleButton from "./components/ControleButton";
 import { Delete, Loop } from "@mui/icons-material";
 import { useAddTime, useResetTimes, useTimes } from "./composables/useTimes";
@@ -17,6 +17,8 @@ export default function Content() {
   const [isFinished, setIsFinished] = useState<boolean>(false);
   const [initialTime, setInitialTime] = useState<string>("");
   const [trackMode, setTrackMode] = useState<"times" | "count">("count");
+
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const pad = (num: number) => (num < 10 ? "0" + num : num);
 
@@ -57,6 +59,19 @@ export default function Content() {
     return newDate;
   };
 
+  // useEffect(() => {
+  //   if (endRef.current) {
+  //     endRef.current.scrollIntoView({
+  //       behavior: "smooth",
+  //       block: "end",
+  //       inline: "nearest",
+  //     });
+  //     if (contentRef.current) {
+  //       contentRef.current.scrollBy(0, 50); // 50 Pixel weiter scrollen
+  //     }
+  //   }
+  // }, [times]);
+
   const handlePlayClick = (value?: number) => {
     if (trackMode === "times") {
       addTimeMutation.mutate({
@@ -73,6 +88,15 @@ export default function Content() {
 
       setIsBreak((prev) => !prev);
     }
+
+    setTimeout(() => {
+      if (contentRef.current) {
+        contentRef.current.scrollTo({
+          top: contentRef.current.scrollHeight,
+          behavior: "smooth",
+        });
+      }
+    }, 100);
   };
 
   const handleEndClick = () => {
@@ -106,6 +130,7 @@ export default function Content() {
         my: 2,
         pb: 10,
       }}
+      ref={contentRef}
     >
       <Label>
         <div onClick={switchmode} className="absolute left-3 cursor-pointer">
@@ -119,19 +144,29 @@ export default function Content() {
           <Delete />
         </div>
       </Label>
-      {times &&
-        times.map((time, index) => {
-          return (
-            <React.Fragment key={index}>
-              <Connection>{time.type}</Connection>
-              {time.end ? (
-                <Label>{time.time}</Label>
-              ) : (
-                <Label secondary>{time.time}</Label>
-              )}
-            </React.Fragment>
-          );
-        })}
+      <Box
+        sx={{
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        {times &&
+          times.map((time, index) => {
+            return (
+              <React.Fragment key={index}>
+                <Connection>{time.type}</Connection>
+                {time.end ? (
+                  <Label>{time.time}</Label>
+                ) : (
+                  <Label secondary>{time.time}</Label>
+                )}
+              </React.Fragment>
+            );
+          })}
+      </Box>
       <Box
         sx={{
           position: "absolute",
